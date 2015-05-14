@@ -1,0 +1,14 @@
+language: emacs-lisp
+addons:
+  apt:
+    sources:
+      - cassou-emacs
+    packages:
+      - emacs24
+before_install:
+  - curl -fsSL https://github.com/cask/cask/raw/master/go | python
+  - export PATH="$HOME/.cask/bin:$PATH"
+install:
+  - make compile
+script:
+  - make test
