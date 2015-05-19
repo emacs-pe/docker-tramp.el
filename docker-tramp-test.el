@@ -1,9 +1,9 @@
-;;; docker-test.el --- docker.el: Unit test suite -*- lexical-binding: t -*-
+;;; docker-tramp-test.el --- docker-tramp.el: Unit test suite -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2015 Mario Rodas <marsam@users.noreply.github.com>
 
 ;; Author: Mario Rodas <marsam@users.noreply.github.com>
-;; URL: https://github.com/emacs-pe/docker.el
+;; URL: https://github.com/emacs-pe/docker-tramp.el
 ;; Keywords: convenience
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
@@ -31,15 +31,15 @@
 
 ;;; Code:
 
-(require 'docker)
+(require 'docker-tramp)
 (require 'undercover nil t)
 
 (when (fboundp 'undercover)
-  (undercover "docker.el"))
+  (undercover "docker-tramp.el"))
 
-(ert-deftest impsort-basic-test ()
+(ert-deftest docker-tramp-basic-test ()
   (should (equal 1 1)))
 
-(provide 'docker-test)
+(provide 'docker-tramp-test)
 
-;;; docker-test.el ends here
+;;; docker-tramp-test.el ends here

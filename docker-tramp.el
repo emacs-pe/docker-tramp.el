@@ -1,9 +1,9 @@
-;;; docker.el --- Interact with Docker -*- lexical-binding: t -*-
+;;; docker-tramp.el --- TRAMP integration for docker containers  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Mario Rodas <marsam@users.noreply.github.com>
 
 ;; Author: Mario Rodas <marsam@users.noreply.github.com>
-;; URL: https://github.com/emacs-pe/docker.el
+;; URL: https://github.com/emacs-pe/docker-tramp.el
 ;; Keywords: docker, convenience
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
@@ -26,11 +26,11 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; [![Travis build status](https://travis-ci.org/emacs-pe/docker.el.svg?branch=master)](https://travis-ci.org/emacs-pe/docker.el)
+;; [![Travis build status](https://travis-ci.org/emacs-pe/docker-tramp.el.svg?branch=master)](https://travis-ci.org/emacs-pe/docker-tramp.el)
 ;;
-;; `docker.el' offers a TRAMP method for Docker containers.
+;; `docker-tramp.el' offers a TRAMP method for Docker containers.
 ;;
-;; > **NOTE**: `docker.el' relies in the `docker exec` command.
+;; > **NOTE**: Currently `docker-tramp.el' relies in the `docker exec` command.
 ;; > Tested with docker version 1.6.x but should work with versions >1.3
 
 ;;; Code:
@@ -39,44 +39,45 @@
 (require 'tramp)
 (require 'tramp-cache)
 
-(defgroup docker nil
-  "Interact with Docker from Emacs."
+(defgroup docker-tramp nil
+  "TRAMP integration for Docker containers."
   :prefix "docker-"
   :group 'applications)
 
-(defcustom docker-executable "docker"
-  "Executable of docker."
+;;; TODO: replace with `docker-api.el'
+(defcustom docker-tramp-docker-executable "docker"
+  "Path to docker executable."
   :type 'string
   :group 'docker)
 
 ;;;###tramp-autoload
 (defconst docker-tramp-completion-function-alist
-  '((docker-parse-running-containers  ""))
+  '((docker-tramp--parse-running-containers  ""))
   "Default list of (FUNCTION FILE) pairs to be examined for docker method.")
 
 ;;;###tramp-autoload
 (defconst docker-tramp-method "docker"
   "Method to connect docker containers.")
 
-(defun docker--running-containers ()
+(defun docker-tramp--running-containers ()
   "Collect docker running containers."
-  (cl-loop for line in (cdr (process-lines docker-executable "ps"))
+  (cl-loop for line in (cdr (process-lines docker-tramp-docker-executable "ps"))
            collect (split-string line "[[:space:]]+" t)))
 
-(defun docker-parse-running-containers (&optional ignored)
+(defun docker-tramp--parse-running-containers (&optional ignored)
   "Return a list of (user host) tuples.
 
 TRAMP calls this function with a filename which is IGNORED.  The
 user is an empty string because the docker TRAMP method uses bash
 to connect to the default user containers."
   (mapcar (lambda (info) (list "" (car info)))
-          (docker--running-containers)))
+          (docker-tramp--running-containers)))
 
 ;;;###autoload
 (defun docker-tramp-cleanup ()
   "Cleanup TRAMP cache for docker method."
   (interactive)
-  (let ((containers (mapcar 'car (docker--running-containers))))
+  (let ((containers (mapcar 'car (docker-tramp--running-containers))))
     (maphash (lambda (key _value)
                (when (and (vectorp key)
                           (string-equal docker-tramp-method (tramp-file-name-method key))
@@ -91,7 +92,7 @@ to connect to the default user containers."
 ;;;###tramp-autoload
 (add-to-list 'tramp-methods
              `(,docker-tramp-method
-               (tramp-login-program      ,docker-executable)
+               (tramp-login-program      ,docker-tramp-docker-executable)
                (tramp-login-args         (("exec" "-it") ("%h") ("bash")))
                (tramp-remote-shell       "/bin/sh")
                (tramp-remote-shell-args  ("-i" "-c"))))
@@ -100,6 +101,6 @@ to connect to the default user containers."
 (eval-after-load 'tramp
   '(tramp-set-completion-function docker-tramp-method docker-tramp-completion-function-alist))
 
-(provide 'docker)
+(provide 'docker-tramp)
 
-;;; docker.el ends here
+;;; docker-tramp.el ends here

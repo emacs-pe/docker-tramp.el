@@ -9,7 +9,7 @@ export EMACS
 
 PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 
-SRCS = docker.el
+SRCS = docker-tramp.el
 OBJS = $(SRCS:.el=.elc)
 
 .PHONY: all compile test clean
@@ -19,7 +19,7 @@ all: compile README.md
 compile: $(OBJS)
 
 test:
-	$(CASK) exec $(EMACSBATCH) -L . -l docker-test.el -f ert-run-tests-batch-and-exit
+	$(CASK) exec $(EMACSBATCH) -L . -l docker-tramp-test.el -f ert-run-tests-batch-and-exit
 
 clean:
 	$(RM) $(OBJS)
