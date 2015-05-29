@@ -1,6 +1,6 @@
 CASK  ?= cask
 WGET  ?= wget
-EMACS ?= emacs
+EMACS  = emacs
 
 EMACSFLAGS =
 EMACSBATCH = $(EMACS) --batch -Q $(EMACSFLAGS)

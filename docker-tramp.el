@@ -41,14 +41,15 @@
 
 (defgroup docker-tramp nil
   "TRAMP integration for Docker containers."
-  :prefix "docker-"
-  :group 'applications)
+  :prefix "docker-tramp-"
+  :group 'applications
+  :link '(url-link :tag "Github" "https://github.com/emacs-pe/docker-tramp.el")
+  :link '(emacs-commentary-link :tag "Commentary" "docker-tramp"))
 
-;;; TODO: replace with `docker-api.el'
 (defcustom docker-tramp-docker-executable "docker"
   "Path to docker executable."
   :type 'string
-  :group 'docker)
+  :group 'docker-tramp)
 
 ;;;###tramp-autoload
 (defconst docker-tramp-completion-function-alist
@@ -77,7 +78,7 @@ to connect to the default user containers."
 (defun docker-tramp-cleanup ()
   "Cleanup TRAMP cache for docker method."
   (interactive)
-  (let ((containers (mapcar 'car (docker-tramp--running-containers))))
+  (let ((containers (mapcar 'car (ignore-errors (docker-tramp--running-containers)))))
     (maphash (lambda (key _value)
                (when (and (vectorp key)
                           (string-equal docker-tramp-method (tramp-file-name-method key))
@@ -93,7 +94,7 @@ to connect to the default user containers."
 (add-to-list 'tramp-methods
              `(,docker-tramp-method
                (tramp-login-program      ,docker-tramp-docker-executable)
-               (tramp-login-args         (("exec" "-it") ("%h") ("bash")))
+               (tramp-login-args         (("exec" "-it") ("%h") ("sh")))
                (tramp-remote-shell       "/bin/sh")
                (tramp-remote-shell-args  ("-i" "-c"))))
 
