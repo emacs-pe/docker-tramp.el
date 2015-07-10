@@ -51,6 +51,16 @@
   :type 'string
   :group 'docker-tramp)
 
+(defcustom docker-tramp-docker-options nil
+  "List of docker options."
+  :type '(repeat string)
+  :group 'docker-tramp)
+
+(defcustom docker-tramp-use-names nil
+  "Whether use names instead of id."
+  :type 'boolean
+  :group 'docker-tramp)
+
 ;;;###tramp-autoload
 (defconst docker-tramp-completion-function-alist
   '((docker-tramp--parse-running-containers  ""))
@@ -61,9 +71,12 @@
   "Method to connect docker containers.")
 
 (defun docker-tramp--running-containers ()
-  "Collect docker running containers."
-  (cl-loop for line in (cdr (process-lines docker-tramp-docker-executable "ps"))
-           collect (split-string line "[[:space:]]+" t)))
+  "Collect docker running containers.
+
+Return a list of containers of the form: \(ID NAME\)"
+  (cl-loop for line in (cdr (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps"))))
+           for info = (split-string line "[[:space:]]+" t)
+           collect (cons (car info) (last info))))
 
 (defun docker-tramp--parse-running-containers (&optional ignored)
   "Return a list of (user host) tuples.
@@ -71,19 +84,19 @@
 TRAMP calls this function with a filename which is IGNORED.  The
 user is an empty string because the docker TRAMP method uses bash
 to connect to the default user containers."
-  (mapcar (lambda (info) (list "" (car info)))
-          (docker-tramp--running-containers)))
+  (cl-loop for (id name) in (docker-tramp--running-containers)
+           collect (list "" (if docker-tramp-use-names name id))))
 
 ;;;###autoload
 (defun docker-tramp-cleanup ()
   "Cleanup TRAMP cache for docker method."
   (interactive)
-  (let ((containers (mapcar 'car (ignore-errors (docker-tramp--running-containers)))))
-    (maphash (lambda (key _value)
-               (when (and (vectorp key)
-                          (string-equal docker-tramp-method (tramp-file-name-method key))
-                          (not (member (tramp-file-name-host key) containers)))
-                 (remhash key tramp-cache-data)))
+  (let ((containers (apply 'append (ignore-errors (docker-tramp--running-containers)))))
+    (maphash (lambda (key _)
+               (and (vectorp key)
+                    (string-equal docker-tramp-method (tramp-file-name-method key))
+                    (not (member (tramp-file-name-host key) containers))
+                    (remhash key tramp-cache-data)))
              tramp-cache-data))
   (setq tramp-cache-data-changed t)
   (if (zerop (hash-table-count tramp-cache-data))
@@ -94,7 +107,7 @@ to connect to the default user containers."
 (add-to-list 'tramp-methods
              `(,docker-tramp-method
                (tramp-login-program      ,docker-tramp-docker-executable)
-               (tramp-login-args         (("exec" "-it") ("%h") ("sh")))
+               (tramp-login-args         (,docker-tramp-docker-options ("exec" "-it") ("%h") ("sh")))
                (tramp-remote-shell       "/bin/sh")
                (tramp-remote-shell-args  ("-i" "-c"))))
 
