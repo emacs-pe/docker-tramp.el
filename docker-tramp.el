@@ -51,6 +51,7 @@
   :type 'string
   :group 'docker-tramp)
 
+;;;###autoload
 (defcustom docker-tramp-docker-options nil
   "List of docker options."
   :type '(repeat string)
@@ -61,12 +62,12 @@
   :type 'boolean
   :group 'docker-tramp)
 
-;;;###tramp-autoload
+;;;###autoload
 (defconst docker-tramp-completion-function-alist
   '((docker-tramp--parse-running-containers  ""))
   "Default list of (FUNCTION FILE) pairs to be examined for docker method.")
 
-;;;###tramp-autoload
+;;;###autoload
 (defconst docker-tramp-method "docker"
   "Method to connect docker containers.")
 
@@ -74,8 +75,7 @@
   "Collect docker running containers.
 
 Return a list of containers of the form: \(ID NAME\)"
-  (cl-loop for line in (cdr (ignore-errors
-			      (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps")))))
+  (cl-loop for line in (cdr (ignore-errors (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps")))))
            for info = (split-string line "[[:space:]]+" t)
            collect (cons (car info) (last info))))
 
@@ -92,7 +92,7 @@ to connect to the default user containers."
 (defun docker-tramp-cleanup ()
   "Cleanup TRAMP cache for docker method."
   (interactive)
-  (let ((containers (apply 'append (ignore-errors (docker-tramp--running-containers)))))
+  (let ((containers (apply 'append (docker-tramp--running-containers))))
     (maphash (lambda (key _)
                (and (vectorp key)
                     (string-equal docker-tramp-method (tramp-file-name-method key))
@@ -104,18 +104,26 @@ to connect to the default user containers."
       (ignore-errors (delete-file tramp-persistency-file-name))
     (tramp-dump-connection-properties)))
 
-;;;###tramp-autoload
-(add-to-list 'tramp-methods
-             `(,docker-tramp-method
-               (tramp-login-program      ,docker-tramp-docker-executable)
-               (tramp-login-args         (,docker-tramp-docker-options ("exec" "-it") ("%h") ("sh")))
-               (tramp-remote-shell       "/bin/sh")
-               (tramp-remote-shell-args  ("-i" "-c"))))
+;;;###autoload
+(defun docker-tramp-add-method ()
+  "Add docker tramp method."
+  (add-to-list 'tramp-methods
+               `(,docker-tramp-method
+                 (tramp-login-program      ,docker-tramp-docker-executable)
+                 (tramp-login-args         (,docker-tramp-docker-options ("exec" "-it") ("%h") ("sh")))
+                 (tramp-remote-shell       "/bin/sh")
+                 (tramp-remote-shell-args  ("-i" "-c")))))
 
-;;;###tramp-autoload
+;;;###autoload
 (eval-after-load 'tramp
-  '(tramp-set-completion-function docker-tramp-method docker-tramp-completion-function-alist))
+  '(progn
+     (docker-tramp-add-method)
+     (tramp-set-completion-function docker-tramp-method docker-tramp-completion-function-alist)))
 
 (provide 'docker-tramp)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; docker-tramp.el ends here
