@@ -74,7 +74,8 @@
   "Collect docker running containers.
 
 Return a list of containers of the form: \(ID NAME\)"
-  (cl-loop for line in (cdr (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps"))))
+  (cl-loop for line in (cdr (ignore-errors
+			      (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps")))))
            for info = (split-string line "[[:space:]]+" t)
            collect (cons (car info) (last info))))
 
