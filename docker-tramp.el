@@ -110,7 +110,7 @@ to connect to the default user containers."
   (add-to-list 'tramp-methods
                `(,docker-tramp-method
                  (tramp-login-program      ,docker-tramp-docker-executable)
-                 (tramp-login-args         (,docker-tramp-docker-options ("exec" "-it") ("%h") ("sh")))
+                 (tramp-login-args         (,docker-tramp-docker-options ("exec" "-it") ("-u" "%u") ("%h") ("sh")))
                  (tramp-remote-shell       "/bin/sh")
                  (tramp-remote-shell-args  ("-i" "-c")))))
 
