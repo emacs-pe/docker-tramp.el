@@ -3,12 +3,20 @@
 *Author:* Mario Rodas <marsam@users.noreply.github.com><br>
 *Version:* 0.1<br>
 
-[![Travis build status](https://travis-ci.org/emacs-pe/docker-tramp.el.svg?branch=master)](https://travis-ci.org/emacs-pe/docker-tramp.el)
-
 `docker-tramp.el` offers a TRAMP method for Docker containers.
 
-> **NOTE**: Currently `docker-tramp.el` relies in the `docker exec` command.
-> Tested with docker version 1.6.x but should work with versions >1.3
+> **NOTE**: `docker-tramp.el` relies in the `docker exec` command.  Tested
+> with docker version 1.6.x but should work with versions >1.3
+
+## Usage
+
+Offers the TRAMP method `docker` to access running containers
+
+    C-x C-f /docker:user@container:/path/to/file
+
+    where
+      user           is the user that you want to use (optional)
+      container      is the id or name of the container
 
 
 ---
