@@ -36,6 +36,9 @@
 ;; See:
 ;; + https://lists.gnu.org/archive/html/tramp-devel/2016-05/msg00000.html
 ;; + http://git.savannah.gnu.org/cgit/tramp.git/commit/?id=98a511248a9405848ed44de48a565b0b725af82c
+(defconst tramp-device-escape-sequence-regexp "\e[[0-9]+n"
+  "Terminal control escape sequences for device status.")
+
 (defun tramp-wait-for-output (proc &optional timeout)
   "Wait for output from remote command."
   (unless (buffer-live-p (process-buffer proc))
