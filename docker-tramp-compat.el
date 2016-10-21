@@ -82,4 +82,6 @@
       found)))
 )
 
+(provide 'docker-tramp-compat)
+
 ;;; docker-tramp-compat.el ends here
