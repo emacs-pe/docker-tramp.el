@@ -55,7 +55,7 @@
 ;; `load-path' somewhere and add the following to your `init.el', which
 ;; overwrites `tramp-wait-for-output' with the patch applied:
 ;;
-;;     (require 'tramp-docker-compat)
+;;     (require 'docker-tramp-compat)
 ;;
 ;; [98a5112]: http://git.savannah.gnu.org/cgit/tramp.git/commit/?id=98a511248a9405848ed44de48a565b0b725af82c
 ;; [docker-tramp-compat.el]: https://github.com/emacs-pe/docker-tramp.el/raw/master/docker-tramp-compat.el
