@@ -141,6 +141,46 @@ to connect to the default user containers."
                  (tramp-remote-shell       "/bin/sh")
                  (tramp-remote-shell-args  ("-i" "-c")))))
 
+;; redefine wait-for-output to fix bug when
+;; trying to access containers which use
+;; busybox's implementation of sh.
+(defun tramp-wait-for-output (proc &optional timeout)
+  "Wait for output from remote command."
+  (unless (buffer-live-p (process-buffer proc))
+    (delete-process proc)
+    (tramp-error proc 'file-error "Process `%s' not available, try again" proc))
+  (with-current-buffer (process-buffer proc)
+    (let* (;; Initially, `tramp-end-of-output' is "#$ ".  There might
+    ;; be leading and following escape sequences, which must be ignored.
+    (regexp (format "[^#$\n]*%s\r?\\(\\[[0-9;]*[a-zA-Z]*\\)*$" (regexp-quote tramp-end-of-output)))
+    ;; Sometimes, the commands do not return a newline but a
+    ;; null byte before the shell prompt, for example "git
+    ;; ls-files -c -z ...".
+    (regexp1 (format "\\(^\\|\000\\)%s" regexp))
+    (found (tramp-wait-for-regexp proc timeout regexp1)))
+      (if found
+    (let (buffer-read-only)
+      ;; A simple-minded busybox has sent " ^H" sequences.
+      ;; Delete them.
+      (goto-char (point-min))
+      (when (re-search-forward "^\\(.\b\\)+$" (point-at-eol) t)
+        (forward-line 1)
+        (delete-region (point-min) (point)))
+      ;; Delete the prompt.
+      (goto-char (point-max))
+      (re-search-backward regexp nil t)
+      (delete-region (point) (point-max)))
+  (if timeout
+      (tramp-error
+      proc 'file-error
+      "[[Remote prompt `%s' not found in %d secs]]"
+      tramp-end-of-output timeout)
+    (tramp-error
+    proc 'file-error
+    "[[Remote prompt `%s' not found]]" tramp-end-of-output)))
+      ;; Return value is whether end-of-output sentinel was found.
+      found)))
+
 ;;;###autoload
 (eval-after-load 'tramp
   '(progn
