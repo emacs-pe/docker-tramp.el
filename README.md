@@ -6,7 +6,8 @@
 `docker-tramp.el` offers a TRAMP method for Docker containers.
 
 > **NOTE**: `docker-tramp.el` relies in the `docker exec` command.  Tested
-> with docker version 1.6.x but should work with versions >1.3
+> with docker version 1.6.x but should work with versions >1.3.  Podman
+> also works.
 
 ## Usage
 
