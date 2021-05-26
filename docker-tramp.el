@@ -39,8 +39,18 @@
 ;;     C-x C-f /docker:user@container:/path/to/file
 ;;
 ;;     where
-;;       user           is the user that you want to use (optional)
+;;       user           is the user that you want to use inside the container (optional)
 ;;       container      is the id or name of the container
+;;
+;; ### [Multi-hop][] examples
+;;
+;; If you container is hosted on `vm.example.net`:
+;;
+;;     /ssh:vm-user@vm.example.net|docker:user@container:/path/to/file
+;;
+;; If you need to run the `docker` command as, say, the `root` user:
+;;
+;;     /sudo:root@localhost|docker:user@container:/path/to/file
 ;;
 ;; ## Troubleshooting
 ;;
@@ -57,6 +67,7 @@
 ;;
 ;;     (require 'docker-tramp-compat)
 ;;
+;; [Multi-hop]: https://www.gnu.org/software/emacs/manual/html_node/tramp/Ad_002dhoc-multi_002dhops.html
 ;; [98a5112]: http://git.savannah.gnu.org/cgit/tramp.git/commit/?id=98a511248a9405848ed44de48a565b0b725af82c
 ;; [docker-tramp-compat.el]: https://github.com/emacs-pe/docker-tramp.el/raw/master/docker-tramp-compat.el
 
