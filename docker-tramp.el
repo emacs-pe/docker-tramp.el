@@ -5,7 +5,7 @@
 ;; Author: Mario Rodas <marsam@users.noreply.github.com>
 ;; URL: https://github.com/emacs-pe/docker-tramp.el
 ;; Keywords: docker, convenience
-;; Version: 0.1
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
 
 ;; This file is NOT part of GNU Emacs.
