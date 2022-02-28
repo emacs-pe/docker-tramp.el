@@ -121,13 +121,24 @@
 (defconst docker-tramp-method "docker"
   "Method to connect docker containers.")
 
-(defun docker-tramp--running-containers ()
+(defun docker-tramp--running-containers (&optional remote-directory)
   "Collect docker running containers.
 
-Return a list of containers of the form: \(ID NAME\)"
-  (cl-loop for line in (cdr (ignore-errors (apply #'process-lines docker-tramp-docker-executable (append docker-tramp-docker-options (list "ps")))))
-           for info = (split-string line "[[:space:]]+" t)
-           collect (cons (car info) (last info))))
+Return a list of containers of the form: \(ID
+NAME\). REMOTE-DIRECTORY, if non-nil, specifies a remote location
+from where to query for running containers."
+  (let* ((default-directory (or remote-directory default-directory))
+         non-essential
+         (args (append docker-tramp-docker-options
+                       (list "ps" "--format" "{{.ID}}:{{.Names}}")))
+         (lines
+          (ignore-errors
+            (split-string
+             (with-output-to-string
+               (apply #'process-file docker-tramp-docker-executable
+                      nil standard-output nil args))))))
+    (mapcar (lambda (line) (split-string line ":"))
+            lines)))
 
 (defun docker-tramp--parse-running-containers (&optional ignored)
   "Return a list of (user host) tuples.
@@ -135,8 +146,19 @@ Return a list of containers of the form: \(ID NAME\)"
 TRAMP calls this function with a filename which is IGNORED.  The
 user is an empty string because the docker TRAMP method uses bash
 to connect to the default user containers."
-  (cl-loop for (id name) in (docker-tramp--running-containers)
-           collect (list "" (if docker-tramp-use-names name id))))
+  (let ((user-input (and (window-minibuffer-p)
+                         (minibuffer-contents-no-properties)))
+        ; Matches the "|docker:" part of user input
+        (last-hop-regexp (concat "\\("
+                                 tramp-postfix-hop-regexp
+                                 tramp-remote-file-name-spec-regexp
+                                 "\\)" "\\'"))
+        dir)
+    (when (and user-input (string-match last-hop-regexp user-input))
+      (setq dir (replace-match ":" nil nil user-input 1)))
+
+    (cl-loop for (id name) in (docker-tramp--running-containers dir)
+             collect (list "" (if docker-tramp-use-names name id)))))
 
 ;;;###autoload
 (defun docker-tramp-cleanup ()
