@@ -168,6 +168,19 @@ to connect to the default user containers."
                  (tramp-remote-shell       "/bin/sh")
                  (tramp-remote-shell-args  ("-i" "-c")))))
 
+(defun docker-tramp--update-method ()
+  "Update docker tramp method."
+  (let (it)
+    (while (setq it (assoc docker-tramp-method tramp-methods))
+      (setq tramp-methods (delq it tramp-methods))))
+  (docker-tramp-add-method))
+
+;; Customization of `docker-tramp-docker-executable' updates `docker-tramp-method'
+(put 'docker-tramp-docker-executable 'custom-set
+     (lambda (sym val)
+       (custom-set-default sym val)
+       (docker-tramp--update-method)))
+
 ;;;###autoload
 (eval-after-load 'tramp
   '(progn
